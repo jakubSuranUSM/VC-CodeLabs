@@ -1,5 +1,5 @@
 import examples from "./examples.js";
-import Queue from "queue";
+import Queue from "./queue.js";
 
 function canStep(word1, word2) {
   if (word1.length != word2.length) return false;
@@ -19,24 +19,46 @@ function getPossibleSteps(word, wordList) {
   return possibleSteps;
 }
 
-function bfs({ beginWord, endWord, wordList }) {
+function wordLadder({ beginWord, endWord, wordList }) {
+  if (!wordList.includes(endWord)) return [];
+
   const queue = new Queue();
 
   // add beginWord to queue
-  queue.push(beginWord);
+  queue.push({ currentWord: beginWord, path: [] });
 
-  let depth = 0
+  let depth = Infinity;
+  let pathFound = false;
+  let results = [];
+  let currentWord = beginWord;
+  let path = [];
+
+  let allItems = [beginWord];
+
   // bfs
-  while (true) {
-    // add all possible steps to queue
-    for (const step of getPossibleSteps(beginWord, wordList))
-        queue.push(step)
+  while (!queue.isEmpty()) {
+    ({ currentWord, path } = queue.pop());
+    if (path.length > depth) break;
 
-    
-
-    
-    
+    if (currentWord === endWord) {
+      pathFound = true;
+      depth = path.length;
+      results.push([...path, currentWord]);
+    } else if (!pathFound) {
+      // add all possible steps to queue with the corresponding path
+      for (const step of getPossibleSteps(currentWord, wordList)) {
+        if (!path.includes(step)) {
+          queue.push({ currentWord: step, path: [...path, currentWord] });
+          allItems.push(step);
+        }
+      }
+    }
   }
+  // console.log(allItems);
+  return results;
 }
 
-bfs(examples[0]);
+for (const example of examples) {
+  let output = wordLadder(example);
+  console.log(output);
+}
